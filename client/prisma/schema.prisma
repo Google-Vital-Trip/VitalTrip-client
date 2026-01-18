@@ -1,0 +1,68 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum IssueStatus {
+  OPEN
+  ACK
+  FIXED
+  IGNORED
+}
+
+model SentryIssue {
+  id              String      @id
+  project         String?
+  environment     String?
+  level           String?
+  title           String?
+  culprit         String?
+  url             String?
+
+  firstSeenAt     DateTime    @default(now())
+  lastSeenAt      DateTime    @default(now())
+  totalCount      Int         @default(0)
+
+  windowStartAt   DateTime    @default(now())
+  windowCount     Int         @default(0)
+
+  status          IssueStatus @default(OPEN)
+  lastNotifiedAt  DateTime?
+
+  triageJson      Json?
+  triageUpdatedAt DateTime?
+
+  notifications   NotificationLog[]
+  triageRuns      TriageRun[]
+
+  @@index([lastSeenAt])
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  issueId   String
+  channel   String   // "slack"
+  sentAt    DateTime @default(now())
+  success   Boolean  @default(true)
+  errorMsg  String?
+
+  issue     SentryIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId, sentAt])
+}
+
+model TriageRun {
+  id        String   @id @default(cuid())
+  issueId   String
+  provider  String   // "openai"
+  model     String?
+  createdAt DateTime @default(now())
+  result    Json
+
+  issue     SentryIssue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId, createdAt])
+}
