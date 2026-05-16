@@ -31,15 +31,17 @@ test.describe('AI 번역 (Translate)', () => {
       .locator('button')
       .filter({ hasText: /translate|번역/i })
       .first();
-    if (await translateBtn.isVisible()) {
-      const [request] = await Promise.all([
-        page.waitForRequest(
-          (req) => req.url().includes('/api/translate') && req.method() === 'POST',
-        ),
-        translateBtn.click(),
-      ]);
-      expect(request.postDataJSON()).toMatchObject({ text: 'I have a headache' });
-    }
+
+    // sourceText React state 반영 후 버튼 활성화까지 대기
+    await expect(translateBtn).toBeEnabled({ timeout: 5_000 });
+
+    const [request] = await Promise.all([
+      page.waitForRequest(
+        (req) => req.url().includes('/api/translate') && req.method() === 'POST',
+      ),
+      translateBtn.click(),
+    ]);
+    expect(request.postDataJSON()).toMatchObject({ text: 'I have a headache' });
   });
 
   test('번역 결과 표시 (mock 응답)', async ({ page }) => {
@@ -50,10 +52,11 @@ test.describe('AI 번역 (Translate)', () => {
       .locator('button')
       .filter({ hasText: /translate|번역/i })
       .first();
-    if (await translateBtn.isVisible()) {
-      await translateBtn.click();
-      await expect(page.getByText('두통이 있습니다')).toBeVisible({ timeout: 5_000 });
-    }
+
+    // sourceText React state 반영 후 버튼 활성화까지 대기
+    await expect(translateBtn).toBeEnabled({ timeout: 5_000 });
+    await translateBtn.click();
+    await expect(page.getByText('두통이 있습니다')).toBeVisible({ timeout: 5_000 });
   });
 
   test('언어 목록 GET /api/translate 호출', async ({ page }) => {
