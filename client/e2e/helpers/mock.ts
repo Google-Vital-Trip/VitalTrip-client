@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Locator, Page } from '@playwright/test';
 
 // LanguageSelectionModal은 localStorage에 'user-set-language'가 없으면
 // portal backdrop을 열어 모든 클릭을 차단함. page.goto() 전에 반드시 호출.
