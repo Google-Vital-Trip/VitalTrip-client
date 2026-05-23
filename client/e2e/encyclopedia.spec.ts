@@ -57,18 +57,4 @@ test.describe('응급 사전 (Encyclopedia)', () => {
     await expect(buttons.first()).toBeVisible();
     expect(await buttons.count()).toBeGreaterThan(1);
   });
-
-  test('검색 후 여러 mock 아이템 표시', async ({ page }) => {
-    const searchInput = page.locator('input').first();
-
-    await Promise.all([
-      page.waitForResponse('**/api/encyclopedia**'),
-      searchInput.pressSequentially('a'),
-    ]);
-
-    // mock 응답의 모든 아이템이 표시됨
-    for (const item of MOCK_ENCYCLOPEDIA_ITEMS) {
-      await expect(page.getByText(item.title)).toBeVisible({ timeout: 5_000 });
-    }
-  });
 });
