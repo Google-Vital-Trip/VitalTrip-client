@@ -55,13 +55,13 @@ export function EncyclopediaClient({ initialItems, total: initialTotal }: Props)
     staleTime: 1000 * 60 * 5,
   });
 
-  const items = data?.pages.flatMap((p) => p.items) ?? [];
   const total = data?.pages[0]?.total ?? initialTotal;
 
   const filtered = useMemo(() => {
+    const items = data?.pages.flatMap((p) => p.items) ?? [];
     if (category === 'all') return items;
     return items.filter((item) => getCategory(item.categories) === category);
-  }, [items, category]);
+  }, [data, category]);
 
   const virtualizer = useWindowVirtualizer({
     count: filtered.length,

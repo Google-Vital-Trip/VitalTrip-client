@@ -23,7 +23,7 @@ test.describe('AI 번역 (Translate)', () => {
     await expect(textarea).toHaveValue('I have a headache and fever');
   });
 
-test('번역 결과 표시 (mock 응답)', async ({ page }) => {
+  test('번역 결과 표시 (mock 응답)', async ({ page }) => {
     const textarea = page.locator('textarea').first();
     await textarea.pressSequentially('I have a headache');
 
