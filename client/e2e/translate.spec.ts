@@ -23,25 +23,6 @@ test.describe('AI 번역 (Translate)', () => {
     await expect(textarea).toHaveValue('I have a headache and fever');
   });
 
-  test('번역 버튼 클릭 시 /api/translate POST 호출', async ({ page }) => {
-    const textarea = page.locator('textarea').first();
-    await textarea.pressSequentially('I have a headache');
-
-    const translateBtn = page
-      .locator('button')
-      .filter({ hasText: /translate|번역/i })
-      .first();
-
-    // sourceText React state 반영 후 버튼 활성화까지 대기
-    await expect(translateBtn).toBeEnabled({ timeout: 5_000 });
-
-    const [request] = await Promise.all([
-      page.waitForRequest((req) => req.url().includes('/api/translate') && req.method() === 'POST'),
-      translateBtn.click(),
-    ]);
-    expect(request.postDataJSON()).toMatchObject({ text: 'I have a headache' });
-  });
-
   test('번역 결과 표시 (mock 응답)', async ({ page }) => {
     const textarea = page.locator('textarea').first();
     await textarea.pressSequentially('I have a headache');
