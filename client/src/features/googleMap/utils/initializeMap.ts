@@ -10,6 +10,8 @@ type InitializeMapParams = {
     service: google.maps.places.PlacesService,
     location: google.maps.LatLngLiteral,
     map: google.maps.Map,
+    types?: string[],
+    language?: string,
   ) => void;
 };
 
@@ -99,7 +101,7 @@ export const initializeMap = async ({
       });
 
       // 주변 장소 검색 실행
-      findNearbyPlaces(placesService, center, map);
+      findNearbyPlaces(placesService, center, map, undefined, currentLanguage);
     },
     (error) => {
       console.error('위치 정보를 가져오는 데 실패했습니다:', error);

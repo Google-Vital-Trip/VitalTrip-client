@@ -1,5 +1,6 @@
 'use client';
 
+import { i18n } from '@/src/shared/lib/i18n';
 import { useEffect, useState } from 'react';
 import { findNearbyPlaces } from '../utils/findNearbyPlaces';
 
@@ -29,6 +30,7 @@ export const useMapControls = (
       { lat: center.lat(), lng: center.lng() },
       mapInstance,
       getTypes(activeCategory),
+      i18n.language,
     );
     setShowResearchBtn(false);
   };
@@ -42,6 +44,7 @@ export const useMapControls = (
       { lat: center.lat(), lng: center.lng() },
       mapInstance,
       getTypes(category),
+      i18n.language,
     );
   };
 
