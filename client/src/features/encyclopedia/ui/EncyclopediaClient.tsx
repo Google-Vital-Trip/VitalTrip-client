@@ -52,6 +52,7 @@ export function EncyclopediaClient({ initialItems, total: initialTotal }: Props)
       debouncedQuery === ''
         ? { pages: [{ total: initialTotal, items: initialItems }], pageParams: [0] }
         : undefined,
+    initialDataUpdatedAt: debouncedQuery === '' ? Date.now() : undefined,
     staleTime: 1000 * 60 * 5,
   });
 
