@@ -1,3 +1,4 @@
+import { i18n } from '@/src/shared/lib/i18n';
 import { useCurrentLocation } from '@/src/shared/hooks/useCurrentLocation';
 import { useState } from 'react';
 import { useMedicalListQuery } from '../api/useMedicalListQuery';
@@ -25,7 +26,7 @@ export const useMedicalList = () => {
     longitude: coords?.longitude ?? 126.978,
     type: medicalType,
     radius,
-    language: 'en',
+    language: i18n.language,
   });
 
   return {
