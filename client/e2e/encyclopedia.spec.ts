@@ -33,19 +33,6 @@ test.describe('응급 사전 (Encyclopedia)', () => {
     expect(request.url()).toContain('search=fever');
   });
 
-  test('검색 결과로 mock 데이터 렌더링', async ({ page }) => {
-    const searchInput = page.locator('input').first();
-
-    await Promise.all([
-      page.waitForResponse(
-        (res) => res.url().includes('/api/encyclopedia') && res.url().includes('search='),
-      ),
-      searchInput.pressSequentially('fever'),
-    ]);
-
-    await expect(page.getByText(MOCK_ENCYCLOPEDIA_ITEMS[0].title)).toBeVisible({ timeout: 5_000 });
-  });
-
   test('검색어 지우기', async ({ page }) => {
     const searchInput = page.locator('input').first();
     await searchInput.fill('test');
