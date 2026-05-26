@@ -37,7 +37,9 @@ test.describe('응급 사전 (Encyclopedia)', () => {
     const searchInput = page.locator('input').first();
 
     await Promise.all([
-      page.waitForResponse('**/api/encyclopedia**'),
+      page.waitForResponse(
+        (res) => res.url().includes('/api/encyclopedia') && res.url().includes('search='),
+      ),
       searchInput.pressSequentially('fever'),
     ]);
 
