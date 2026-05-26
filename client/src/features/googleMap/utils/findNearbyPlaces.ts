@@ -10,6 +10,90 @@ let clusterer: MarkerClusterer | null = null;
 const infoWindowRegistry = new Map<string, google.maps.InfoWindow>();
 const detailCache = new Map<string, google.maps.places.PlaceResult>();
 
+type SupportedLang = 'ko' | 'en' | 'ja' | 'zh' | 'es' | 'fr' | 'de';
+
+const UI_LABELS: Record<
+  SupportedLang,
+  {
+    pharmacy: string;
+    hospital: string;
+    open: string;
+    closed: string;
+    website: string;
+    viewMap: string;
+    loading: string;
+  }
+> = {
+  ko: {
+    pharmacy: '약국',
+    hospital: '병원',
+    open: '영업 중',
+    closed: '영업 종료',
+    website: '웹사이트 방문',
+    viewMap: 'Google Maps에서 보기',
+    loading: '불러오는 중...',
+  },
+  en: {
+    pharmacy: 'Pharmacy',
+    hospital: 'Hospital',
+    open: 'Open Now',
+    closed: 'Closed',
+    website: 'Visit Website',
+    viewMap: 'View on Google Maps',
+    loading: 'Loading...',
+  },
+  ja: {
+    pharmacy: '薬局',
+    hospital: '病院',
+    open: '営業中',
+    closed: '営業終了',
+    website: 'ウェブサイトを見る',
+    viewMap: 'Google マップで見る',
+    loading: '読み込み中...',
+  },
+  zh: {
+    pharmacy: '药店',
+    hospital: '医院',
+    open: '营业中',
+    closed: '已关闭',
+    website: '访问网站',
+    viewMap: '在 Google 地图中查看',
+    loading: '加载中...',
+  },
+  es: {
+    pharmacy: 'Farmacia',
+    hospital: 'Hospital',
+    open: 'Abierto',
+    closed: 'Cerrado',
+    website: 'Visitar sitio web',
+    viewMap: 'Ver en Google Maps',
+    loading: 'Cargando...',
+  },
+  fr: {
+    pharmacy: 'Pharmacie',
+    hospital: 'Hôpital',
+    open: 'Ouvert',
+    closed: 'Fermé',
+    website: 'Visiter le site',
+    viewMap: 'Voir sur Google Maps',
+    loading: 'Chargement...',
+  },
+  de: {
+    pharmacy: 'Apotheke',
+    hospital: 'Krankenhaus',
+    open: 'Geöffnet',
+    closed: 'Geschlossen',
+    website: 'Website besuchen',
+    viewMap: 'In Google Maps anzeigen',
+    loading: 'Laden...',
+  },
+};
+
+const getLabels = (language: string) => {
+  const lang = language.split('-')[0] as SupportedLang;
+  return UI_LABELS[lang] ?? UI_LABELS['en'];
+};
+
 export const cleanupNearbyPlaces = () => {
   activeMarkers.forEach(({ marker, listener }) => {
     google.maps.event.removeListener(listener);
@@ -57,7 +141,9 @@ const renderStars = (rating: number): string => {
   return '&#9733;'.repeat(full) + (half ? '&frac12;' : '') + '&#9734;'.repeat(empty);
 };
 
-const buildLoadingContent = (): string => `
+const buildLoadingContent = (language: string): string => {
+  const labels = getLabels(language);
+  return `
   <div style="
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     width: 260px;
@@ -77,15 +163,21 @@ const buildLoadingContent = (): string => `
       animation: spin 0.8s linear infinite;
       margin: 0 auto 10px;
     "></div>
-    불러오는 중...
+    ${labels.loading}
     <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
   </div>
 `;
+};
 
-const buildDetailContent = (place: google.maps.places.PlaceResult, type: string): string => {
+const buildDetailContent = (
+  place: google.maps.places.PlaceResult,
+  type: string,
+  language: string,
+): string => {
+  const labels = getLabels(language);
   const isPharmacy = type === 'pharmacy';
   const accentColor = isPharmacy ? '#10b981' : '#3b82f6';
-  const badgeLabel = isPharmacy ? '약국' : '병원';
+  const badgeLabel = isPharmacy ? labels.pharmacy : labels.hospital;
   const badgeBg = isPharmacy ? '#d1fae5' : '#dbeafe';
   const badgeText = isPharmacy ? '#065f46' : '#1e40af';
 
@@ -94,8 +186,8 @@ const buildDetailContent = (place: google.maps.places.PlaceResult, type: string)
     isOpen === undefined
       ? ''
       : isOpen
-        ? `<span style="color:#10b981;font-weight:600;">&#9679; 영업 중</span>`
-        : `<span style="color:#ef4444;font-weight:600;">&#9679; 영업 종료</span>`;
+        ? `<span style="color:#10b981;font-weight:600;">&#9679; ${labels.open}</span>`
+        : `<span style="color:#ef4444;font-weight:600;">&#9679; ${labels.closed}</span>`;
 
   const rating =
     place.rating !== undefined
@@ -140,7 +232,7 @@ const buildDetailContent = (place: google.maps.places.PlaceResult, type: string)
          onmouseover="this.style.background='#f1f5f9'"
          onmouseout="this.style.background='#f8fafc'"
        >
-         &#127760; 웹사이트 방문
+         &#127760; ${labels.website}
        </a>`
     : '';
 
@@ -197,7 +289,7 @@ const buildDetailContent = (place: google.maps.places.PlaceResult, type: string)
         onmouseover="this.style.opacity='0.9'"
         onmouseout="this.style.opacity='1'"
       >
-        Google Maps에서 보기 &#8594;
+        ${labels.viewMap} &#8594;
       </a>
     </div>
   `;
@@ -208,6 +300,7 @@ export const findNearbyPlaces = (
   location: google.maps.LatLngLiteral,
   map: google.maps.Map,
   types: string[] = ['pharmacy', 'hospital'],
+  language = 'en',
 ) => {
   cleanupNearbyPlaces();
 
@@ -248,7 +341,7 @@ export const findNearbyPlaces = (
           });
 
           const infoWindow = new google.maps.InfoWindow({
-            content: buildLoadingContent(),
+            content: buildLoadingContent(language),
           });
 
           if (place.place_id) {
@@ -266,12 +359,12 @@ export const findNearbyPlaces = (
 
             const cached = detailCache.get(place.place_id!);
             if (cached) {
-              infoWindow.setContent(buildDetailContent(cached, type));
+              infoWindow.setContent(buildDetailContent(cached, type, language));
               infoWindow.open({ map, anchor: marker });
               return;
             }
 
-            infoWindow.setContent(buildLoadingContent());
+            infoWindow.setContent(buildLoadingContent(language));
             infoWindow.open({ map, anchor: marker });
 
             placesService.getDetails(
@@ -291,9 +384,9 @@ export const findNearbyPlaces = (
               (detail, detailStatus) => {
                 if (detailStatus === google.maps.places.PlacesServiceStatus.OK && detail) {
                   detailCache.set(place.place_id!, detail);
-                  infoWindow.setContent(buildDetailContent(detail, type));
+                  infoWindow.setContent(buildDetailContent(detail, type, language));
                 } else {
-                  infoWindow.setContent(buildDetailContent(place, type));
+                  infoWindow.setContent(buildDetailContent(place, type, language));
                 }
               },
             );
