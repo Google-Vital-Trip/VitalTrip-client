@@ -51,6 +51,9 @@ jobs:
       - name: Prettier format check
         run: pnpm --filter client format:check
 
+      - name: Jest unit & RTL tests
+        run: pnpm --filter client test --ci --no-coverage
+
       - name: Build application
         run: pnpm --filter client build
 
