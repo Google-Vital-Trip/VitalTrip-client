@@ -1,6 +1,13 @@
 import type { TFunction } from 'i18next';
-import { getMedicalTypeLabel } from '../getMedicalTypeLabel';
+import { renderHook } from '@testing-library/react';
+import { getMedicalTypeLabel, useMedicalTypeLabel } from '../getMedicalTypeLabel';
 import { MedicalType } from '../../types/medical';
+
+jest.mock('../../../../shared/lib/i18n', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
 
 describe('getMedicalTypeLabel', () => {
   describe('t 함수 없이 호출 (fallback 모드)', () => {
@@ -52,6 +59,26 @@ describe('getMedicalTypeLabel', () => {
 
       // fallback인 'Hospital'이 아닌 t 함수 반환값을 사용
       expect(result).toBe('Hospital (EN)');
+    });
+  });
+
+  describe('useMedicalTypeLabel 훅', () => {
+    it('훅이 타입별 라벨 반환 함수를 제공한다', () => {
+      const { result } = renderHook(() => useMedicalTypeLabel());
+      const getLabel = result.current;
+
+      // mock t는 key를 그대로 반환 → 'medical.types.hospital'
+      expect(getLabel('hospital')).toBe('medical.types.hospital');
+      expect(getLabel('pharmacy')).toBe('medical.types.pharmacy');
+      expect(getLabel('emergency')).toBe('medical.types.emergency');
+    });
+
+    it('훅이 반환한 함수는 getMedicalTypeLabel에 t를 주입해 호출한다', () => {
+      const { result } = renderHook(() => useMedicalTypeLabel());
+      const getLabel = result.current;
+
+      // t 함수가 있으므로 fallback switch가 아닌 번역 키 경로를 탄다
+      expect(getLabel('hospital')).not.toBe('Hospital');
     });
   });
 });
