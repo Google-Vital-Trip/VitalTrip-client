@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { getMedicalTypeLabel } from '../getMedicalTypeLabel';
 import { MedicalType } from '../../types/medical';
 
@@ -23,7 +24,7 @@ describe('getMedicalTypeLabel', () => {
   describe('t 함수와 함께 호출 (i18n 모드)', () => {
     it('t 함수를 통해 번역 키를 호출한다', () => {
       const mockT = jest.fn().mockReturnValue('병원');
-      const result = getMedicalTypeLabel('hospital', mockT as any);
+      const result = getMedicalTypeLabel('hospital', mockT as unknown as TFunction);
 
       expect(mockT).toHaveBeenCalledWith('medical.types.hospital');
       expect(result).toBe('병원');
@@ -31,7 +32,7 @@ describe('getMedicalTypeLabel', () => {
 
     it('pharmacy 타입에 올바른 번역 키를 사용한다', () => {
       const mockT = jest.fn().mockReturnValue('약국');
-      const result = getMedicalTypeLabel('pharmacy', mockT as any);
+      const result = getMedicalTypeLabel('pharmacy', mockT as unknown as TFunction);
 
       expect(mockT).toHaveBeenCalledWith('medical.types.pharmacy');
       expect(result).toBe('약국');
@@ -39,7 +40,7 @@ describe('getMedicalTypeLabel', () => {
 
     it('emergency 타입에 올바른 번역 키를 사용한다', () => {
       const mockT = jest.fn().mockReturnValue('응급실');
-      const result = getMedicalTypeLabel('emergency', mockT as any);
+      const result = getMedicalTypeLabel('emergency', mockT as unknown as TFunction);
 
       expect(mockT).toHaveBeenCalledWith('medical.types.emergency');
       expect(result).toBe('응급실');
@@ -47,7 +48,7 @@ describe('getMedicalTypeLabel', () => {
 
     it('t 함수가 주어지면 fallback switch 대신 t 함수 결과를 반환한다', () => {
       const mockT = jest.fn().mockReturnValue('Hospital (EN)');
-      const result = getMedicalTypeLabel('hospital', mockT as any);
+      const result = getMedicalTypeLabel('hospital', mockT as unknown as TFunction);
 
       // fallback인 'Hospital'이 아닌 t 함수 반환값을 사용
       expect(result).toBe('Hospital (EN)');
