@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { BrowserContext, Page } from '@playwright/test';
 
 // LanguageSelectionModal은 localStorage에 'user-set-language'가 없으면
 // portal backdrop을 열어 모든 클릭을 차단함. page.goto() 전에 반드시 호출.
@@ -75,6 +75,55 @@ export async function mockEncyclopediaAPI(page: Page) {
         },
       },
     }),
+  );
+}
+
+export const MOCK_MEDICAL_LIST = [
+  {
+    name: '서울대학교병원',
+    address: '서울특별시 종로구 대학로 101',
+    phoneNumber: '02-2072-2114',
+    latitude: 37.5796,
+    longitude: 126.9988,
+    distance: 350,
+    openNow: true,
+    opendingHours: ['09:00 - 18:00'],
+    websiteUrl: 'https://www.snuh.org',
+    imageUrl: '',
+  },
+  {
+    name: '종로약국',
+    address: '서울특별시 종로구 종로 100',
+    phoneNumber: '02-123-4567',
+    latitude: 37.5706,
+    longitude: 126.991,
+    distance: 820,
+    openNow: false,
+    opendingHours: ['10:00 - 20:00'],
+    websiteUrl: '',
+    imageUrl: '',
+  },
+];
+
+export async function mockMedicalAPI(page: Page, data = MOCK_MEDICAL_LIST) {
+  await page.route('**/api/medical**', (route) =>
+    route.fulfill({ json: { message: 'success', data } }),
+  );
+}
+
+// Google Maps SDK 로딩을 차단 — mapInstance가 null로 유지되지만
+// MedicalList는 mapInstance와 독립적이므로 테스트에 영향 없음.
+export async function blockGoogleMaps(page: Page) {
+  await page.route('**maps.googleapis.com/**', (route) => route.abort());
+}
+
+export async function setupHomePageContext(page: Page, context: BrowserContext) {
+  await setupPage(page);
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 37.5665, longitude: 126.978 });
+  await blockGoogleMaps(page);
+  await page.route('**/api/auth/isLoggedIn', (route) =>
+    route.fulfill({ json: { isLoggedIn: false } }),
   );
 }
 
